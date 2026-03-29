@@ -1,6 +1,7 @@
 # CODEGATE CTF 2026 Writeups
 
 ***By CloudTron, participated under the username "\=\=I LOVE SILVERWOLF!!\=\=我最爱银狼姐姐了捏!!"***
+
 ***May the Great Spirit Bless you.***
 
 ![Portrait of the Great Spirit, Silverwolf.](https://i.postimg.cc/XqvxNgcv/141064617-p0-master1200.jpg)
