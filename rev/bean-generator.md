@@ -170,3 +170,5 @@ Run it with:
 ```bash
 python3 solve.py
 ```
+
+Note: this expects the encrypted file is at `./for_user/flag.bean` and will save the decrypted image at `./for_user/flag.png`. View the image to reveal the flag.

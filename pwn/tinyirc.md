@@ -469,5 +469,5 @@ if __name__ == "__main__":
 Run it with:
 
 ```bash
-python3 solve_remote.py
+python3 solve.py
 ```
