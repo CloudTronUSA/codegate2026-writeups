@@ -4,6 +4,7 @@
 ***May the Great Spirit Bless you.***
 
 ![Portrait of the Great Spirit, Silverwolf.](https://i.postimg.cc/XqvxNgcv/141064617-p0-master1200.jpg)
+
 *Portrait of the Great Spirit, Silverwolf.*
 
 ## Overview
